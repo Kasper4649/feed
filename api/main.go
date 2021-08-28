@@ -1,22 +1,14 @@
-package main
+package handler
 
 import (
 	"github.com/antchfx/htmlquery"
 	"github.com/gorilla/feeds"
-	"log"
-	"net"
 	"net/http"
 	"strings"
 	"time"
 )
 
-func main() {
-
-	http.HandleFunc("/zhuixinfan", ZhuixinfanHandler)
-	log.Fatal(http.ListenAndServe(net.JoinHostPort("127.0.0.1", "4443"), nil))
-}
-
-func ZhuixinfanHandler(w http.ResponseWriter, r *http.Request) {
+func Handler(w http.ResponseWriter, r *http.Request) {
 	feed, _ := Zhuixinfan([]string{"漂抵者"})
 	rss, _ := feed.ToRss()
 	w.Write([]byte(rss))
