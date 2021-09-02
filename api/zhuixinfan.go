@@ -1,8 +1,7 @@
 package handler
 
 import (
-	s "feed/string"
-	t "feed/time"
+	"feed"
 	"github.com/antchfx/htmlquery"
 	"github.com/gorilla/feeds"
 	"net/http"
@@ -22,7 +21,7 @@ func ZhuixinfanHandler(w http.ResponseWriter, r *http.Request) {
 
 func Zhuixinfan(filter []string) (string, error) {
 	const URL = "http://www.fanxinzhui.com"
-	feed := &feeds.Feed{
+	f := &feeds.Feed{
 		Title:       "追新番 - RSS Feed",
 		Link:        &feeds.Link{Href: URL},
 		Description: "追新番 - RSS Feed",
@@ -35,14 +34,14 @@ func Zhuixinfan(filter []string) (string, error) {
 	}
 
 	for _, i := range items {
-		feed.Add(&feeds.Item{
-			Title:   i.title,
-			Link:    &feeds.Link{Href: i.link},
-			Created: i.created,
+		f.Add(&feeds.Item{
+			Title:   i.Title,
+			Link:    &feeds.Link{Href: i.Link},
+			Created: i.Created,
 		})
 	}
 
-	rss, err := feed.ToRss()
+	rss, err := f.ToRss()
 	if err != nil {
 		return "", err
 	}
@@ -50,8 +49,8 @@ func Zhuixinfan(filter []string) (string, error) {
 	return rss, nil
 }
 
-func fetchZhuixinfan(url string, filter []string) ([]feedItem, error) {
-	var items []feedItem
+func fetchZhuixinfan(url string, filter []string) ([]feed.Item, error) {
+	var items []feed.Item
 
 	doc, err := htmlquery.LoadURL(url)
 	if err != nil {
@@ -61,16 +60,16 @@ func fetchZhuixinfan(url string, filter []string) ([]feedItem, error) {
 	list := htmlquery.Find(doc, "//a[@class='la']")
 	for _, l := range list {
 		title := htmlquery.InnerText(htmlquery.FindOne(l, "//span[@class='name']"))
-		if !s.Contain(title, filter) {
+		if !feed.Contain(title, filter) {
 			continue
 		}
 		link := url + htmlquery.SelectAttr(l, "href")
 		timeText := htmlquery.InnerText(htmlquery.FindOne(l, "//span[@class='time']"))
-		created := t.ParseTime("2006-01-02 15:04", timeText)
-		items = append(items, feedItem{
-			title:   title,
-			link:    link,
-			created: created,
+		created := feed.ParseTime("2006-01-02 15:04", timeText)
+		items = append(items, feed.Item{
+			Title:   title,
+			Link:    link,
+			Created: created,
 		})
 	}
 	return items, nil

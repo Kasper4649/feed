@@ -1,7 +1,7 @@
 package handler
 
 import (
-	t "feed/time"
+	"feed"
 	"github.com/antchfx/htmlquery"
 	"github.com/gorilla/feeds"
 	"net/http"
@@ -22,7 +22,7 @@ func AcfunHandler(w http.ResponseWriter, r *http.Request) {
 
 func Acfun(filter []string) (string, error) {
 	const URL = "https://www.acfun.cn"
-	feed := &feeds.Feed{
+	f := &feeds.Feed{
 		Title:       "Acfun - RSS Feed",
 		Link:        &feeds.Link{Href: URL},
 		Description: "Acfun - RSS Feed",
@@ -35,14 +35,14 @@ func Acfun(filter []string) (string, error) {
 	}
 
 	for _, i := range items {
-		feed.Add(&feeds.Item{
-			Title:   i.title,
-			Link:    &feeds.Link{Href: i.link},
-			Created: i.created,
+		f.Add(&feeds.Item{
+			Title:   i.Title,
+			Link:    &feeds.Link{Href: i.Link},
+			Created: i.Created,
 		})
 	}
 
-	rss, err := feed.ToRss()
+	rss, err := f.ToRss()
 	if err != nil {
 		return "", err
 	}
@@ -50,12 +50,12 @@ func Acfun(filter []string) (string, error) {
 	return rss, nil
 }
 
-func fetchAcfun(url string, filter []string) ([]feedItem, error) {
-	var items []feedItem
+func fetchAcfun(url string, filter []string) ([]feed.Item, error) {
+	var items []feed.Item
 
 	for _, f := range filter {
 		fullURL := url + "/u/" + f
-		html, err := getHTML(fullURL)
+		html, err := feed.GetHTML(fullURL)
 		if err != nil {
 			return nil, err
 		}
@@ -69,11 +69,11 @@ func fetchAcfun(url string, filter []string) ([]feedItem, error) {
 			title := htmlquery.InnerText(htmlquery.FindOne(l, "//p[@class='title line']"))
 			link := url + htmlquery.SelectAttr(l, "href")
 			timeText := htmlquery.InnerText(htmlquery.FindOne(l, "//p[@class='date']"))
-			created := t.ParseTime("2006/01/02", timeText)
-			items = append(items, feedItem{
-				title:   title,
-				link:    link,
-				created: created,
+			created := feed.ParseTime("2006/01/02", timeText)
+			items = append(items, feed.Item{
+				Title:   title,
+				Link:    link,
+				Created: created,
 			})
 		}
 	}

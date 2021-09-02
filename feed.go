@@ -1,4 +1,4 @@
-package handler
+package feed
 
 import (
 	"io"
@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-type feedItem struct {
-	title   string
-	link    string
-	created time.Time
+type Item struct {
+	Title   string
+	Link    string
+	Created time.Time
 }
 
-func getHTML(url string) (string, error) {
+func GetHTML(url string) (string, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", err

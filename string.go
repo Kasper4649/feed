@@ -1,4 +1,4 @@
-package string
+package feed
 
 import (
 	"strings"
