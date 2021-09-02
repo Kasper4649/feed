@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+func ZhuixinfanHandler(w http.ResponseWriter, r *http.Request) {
 	rss, err := Zhuixinfan([]string{"漂抵者"})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -29,7 +29,7 @@ func Zhuixinfan(filter []string) (string, error) {
 		Created:     time.Now(),
 	}
 
-	items, err := fetch(URL, filter)
+	items, err := fetchZhuixinfan(URL, filter)
 	if err != nil {
 		return "", err
 	}
@@ -50,14 +50,8 @@ func Zhuixinfan(filter []string) (string, error) {
 	return rss, nil
 }
 
-type zhuixinfanItem struct {
-	title   string
-	link    string
-	created time.Time
-}
-
-func fetch(url string, filter []string) ([]zhuixinfanItem, error) {
-	var items []zhuixinfanItem
+func fetchZhuixinfan(url string, filter []string) ([]feedItem, error) {
+	var items []feedItem
 
 	doc, err := htmlquery.LoadURL(url)
 	if err != nil {
@@ -73,7 +67,7 @@ func fetch(url string, filter []string) ([]zhuixinfanItem, error) {
 		link := url + htmlquery.SelectAttr(l, "href")
 		timeText := htmlquery.InnerText(htmlquery.FindOne(l, "//span[@class='time']"))
 		created := t.ParseTime("2006-01-02 15:04", timeText)
-		items = append(items, zhuixinfanItem{
+		items = append(items, feedItem{
 			title:   title,
 			link:    link,
 			created: created,
