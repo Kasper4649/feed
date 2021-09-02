@@ -1,7 +1,9 @@
 package handler
 
 import (
-	"feed"
+	"feed/internal/feed"
+	s "feed/internal/string"
+	t "feed/internal/time"
 	"github.com/antchfx/htmlquery"
 	"github.com/gorilla/feeds"
 	"net/http"
@@ -60,12 +62,12 @@ func fetchZhuixinfan(url string, filter []string) ([]feed.Item, error) {
 	list := htmlquery.Find(doc, "//a[@class='la']")
 	for _, l := range list {
 		title := htmlquery.InnerText(htmlquery.FindOne(l, "//span[@class='name']"))
-		if !feed.Contain(title, filter) {
+		if !s.Contain(title, filter) {
 			continue
 		}
 		link := url + htmlquery.SelectAttr(l, "href")
 		timeText := htmlquery.InnerText(htmlquery.FindOne(l, "//span[@class='time']"))
-		created := feed.ParseTime("2006-01-02 15:04", timeText)
+		created := t.ParseTime("2006-01-02 15:04", timeText)
 		items = append(items, feed.Item{
 			Title:   title,
 			Link:    link,

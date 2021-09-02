@@ -1,4 +1,4 @@
-package feed
+package time
 
 import (
 	"time"

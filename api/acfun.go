@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"feed"
+	"feed/internal/feed"
+	t "feed/internal/time"
 	"github.com/antchfx/htmlquery"
 	"github.com/gorilla/feeds"
 	"net/http"
@@ -69,7 +70,7 @@ func fetchAcfun(url string, filter []string) ([]feed.Item, error) {
 			title := htmlquery.InnerText(htmlquery.FindOne(l, "//p[@class='title line']"))
 			link := url + htmlquery.SelectAttr(l, "href")
 			timeText := htmlquery.InnerText(htmlquery.FindOne(l, "//p[@class='date']"))
-			created := feed.ParseTime("2006/01/02", timeText)
+			created := t.ParseTime("2006/01/02", timeText)
 			items = append(items, feed.Item{
 				Title:   title,
 				Link:    link,
