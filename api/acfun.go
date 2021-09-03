@@ -1,7 +1,9 @@
 package handler
 
 import (
+	e "feed/internal/error"
 	"feed/internal/feed"
+	"feed/internal/firebase"
 	t "feed/internal/time"
 	"github.com/antchfx/htmlquery"
 	"net/http"
@@ -9,15 +11,16 @@ import (
 )
 
 func AcfunHandler(w http.ResponseWriter, r *http.Request) {
-	sf := feed.NewSiteFeed("Acfun", "https://www.acfun.cn", []string{"8673798"}, fetchAcfun)
+	data, err := firebase.GetData("feeds", "acfun")
+	if err != nil {
+		e.WriteError(w, err)
+	}
+	sf := feed.NewSiteFeed(data, fetchAcfun)
 	rss, err := sf.Start()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte(err.Error()))
-		return
+		e.WriteError(w, err)
 	}
 	_, _ = w.Write([]byte(rss))
-
 }
 
 func fetchAcfun(url string, filter []string) ([]feed.Item, error) {

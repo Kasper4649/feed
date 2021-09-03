@@ -52,7 +52,14 @@ func (s SiteFeed) Start() (string, error) {
 	return rss, nil
 }
 
-func NewSiteFeed(name, url string, filter []string, fetch fetchItem) *SiteFeed {
+func NewSiteFeed(data map[string]interface{}, fetch fetchItem) *SiteFeed {
+	name := data["name"].(string)
+	url := data["url"].(string)
+	filter := make([]string, len(data["filter"].([]interface{})))
+	for k, v := range data["filter"].([]interface{}) {
+		filter[k] = v.(string)
+	}
+
 	return &SiteFeed{
 		name:    name,
 		baseURL: url,

@@ -1,7 +1,9 @@
 package handler
 
 import (
+	e "feed/internal/error"
 	"feed/internal/feed"
+	"feed/internal/firebase"
 	s "feed/internal/string"
 	t "feed/internal/time"
 	"github.com/antchfx/htmlquery"
@@ -9,18 +11,20 @@ import (
 )
 
 func ZhuixinfanHandler(w http.ResponseWriter, r *http.Request) {
-	sf := feed.NewSiteFeed("追新番", "http://www.fanxinzhui.com", []string{"漂抵者"}, fetch)
+	data, err := firebase.GetData("feeds", "zhuixinfan")
+	if err != nil {
+		e.WriteError(w, err)
+	}
+	sf := feed.NewSiteFeed(data, fetchZhuixinfan)
 	rss, err := sf.Start()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte(err.Error()))
-		return
+		e.WriteError(w, err)
 	}
 	_, _ = w.Write([]byte(rss))
 
 }
 
-func fetch(url string, filter []string) ([]feed.Item, error) {
+func fetchZhuixinfan(url string, filter []string) ([]feed.Item, error) {
 	var items []feed.Item
 
 	doc, err := htmlquery.LoadURL(url)
@@ -28,8 +32,8 @@ func fetch(url string, filter []string) ([]feed.Item, error) {
 		return nil, err
 	}
 
-	elments := htmlquery.Find(doc, "//a[@class='la']")
-	for _, el := range elments {
+	elements := htmlquery.Find(doc, "//a[@class='la']")
+	for _, el := range elements {
 		title := htmlquery.InnerText(htmlquery.FindOne(el, "//span[@class='name']"))
 		if !s.Contain(title, filter) {
 			continue
