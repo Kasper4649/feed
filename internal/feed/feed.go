@@ -1,15 +1,72 @@
 package feed
 
 import (
+	"github.com/gorilla/feeds"
 	"io"
 	"net/http"
 	"time"
 )
 
 type Item struct {
-	Title   string
-	Link    string
-	Created time.Time
+	title   string
+	link    string
+	created time.Time
+}
+
+type fetchItem func(url string, filter []string) ([]Item, error)
+
+type SiteFeed struct {
+	Item
+	name    string
+	baseURL string
+	filter  []string
+	fetch   fetchItem
+}
+
+func (s SiteFeed) Start() (string, error) {
+	f := &feeds.Feed{
+		Title:       s.name + " - RSS Feed",
+		Link:        &feeds.Link{Href: s.baseURL},
+		Description: s.name + " - RSS Feed",
+		Created:     time.Now(),
+	}
+
+	items, err := s.fetch(s.baseURL, s.filter)
+	if err != nil {
+		return "", err
+	}
+
+	for _, i := range items {
+		f.Add(&feeds.Item{
+			Title:   i.title,
+			Link:    &feeds.Link{Href: i.link},
+			Created: i.created,
+		})
+	}
+
+	rss, err := f.ToRss()
+	if err != nil {
+		return "", err
+	}
+
+	return rss, nil
+}
+
+func NewSiteFeed(name, url string, filter []string, fetch fetchItem) *SiteFeed {
+	return &SiteFeed{
+		name:    name,
+		baseURL: url,
+		filter:  filter,
+		fetch:   fetch,
+	}
+}
+
+func NewItem(title, link string, created time.Time) Item {
+	return Item{
+		title:   title,
+		link:    link,
+		created: created,
+	}
 }
 
 func GetHTML(url string) (string, error) {

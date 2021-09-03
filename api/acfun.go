@@ -4,14 +4,13 @@ import (
 	"feed/internal/feed"
 	t "feed/internal/time"
 	"github.com/antchfx/htmlquery"
-	"github.com/gorilla/feeds"
 	"net/http"
 	"strings"
-	"time"
 )
 
 func AcfunHandler(w http.ResponseWriter, r *http.Request) {
-	rss, err := Acfun([]string{"8673798"})
+	sf := feed.NewSiteFeed("Acfun", "https://www.acfun.cn", []string{"8673798"}, fetchAcfun)
+	rss, err := sf.Start()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = w.Write([]byte(err.Error()))
@@ -19,36 +18,6 @@ func AcfunHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	_, _ = w.Write([]byte(rss))
 
-}
-
-func Acfun(filter []string) (string, error) {
-	const URL = "https://www.acfun.cn"
-	f := &feeds.Feed{
-		Title:       "Acfun - RSS Feed",
-		Link:        &feeds.Link{Href: URL},
-		Description: "Acfun - RSS Feed",
-		Created:     time.Now(),
-	}
-
-	items, err := fetchAcfun(URL, filter)
-	if err != nil {
-		return "", err
-	}
-
-	for _, i := range items {
-		f.Add(&feeds.Item{
-			Title:   i.Title,
-			Link:    &feeds.Link{Href: i.Link},
-			Created: i.Created,
-		})
-	}
-
-	rss, err := f.ToRss()
-	if err != nil {
-		return "", err
-	}
-
-	return rss, nil
 }
 
 func fetchAcfun(url string, filter []string) ([]feed.Item, error) {
@@ -65,17 +34,13 @@ func fetchAcfun(url string, filter []string) ([]feed.Item, error) {
 			return nil, err
 		}
 
-		list := htmlquery.Find(doc, "//a[@class='ac-space-video weblog-item']")
-		for _, l := range list {
-			title := htmlquery.InnerText(htmlquery.FindOne(l, "//p[@class='title line']"))
-			link := url + htmlquery.SelectAttr(l, "href")
-			timeText := htmlquery.InnerText(htmlquery.FindOne(l, "//p[@class='date']"))
+		elements := htmlquery.Find(doc, "//a[@class='ac-space-video weblog-item']")
+		for _, el := range elements {
+			title := htmlquery.InnerText(htmlquery.FindOne(el, "//p[@class='title line']"))
+			link := url + htmlquery.SelectAttr(el, "href")
+			timeText := htmlquery.InnerText(htmlquery.FindOne(el, "//p[@class='date']"))
 			created := t.ParseTime("2006/01/02", timeText)
-			items = append(items, feed.Item{
-				Title:   title,
-				Link:    link,
-				Created: created,
-			})
+			items = append(items, feed.NewItem(title, link, created))
 		}
 	}
 
