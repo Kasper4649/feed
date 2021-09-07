@@ -13,6 +13,14 @@ type Item struct {
 	created time.Time
 }
 
+func NewItem(title, link string, created time.Time) Item {
+	return Item{
+		title:   title,
+		link:    link,
+		created: created,
+	}
+}
+
 type fetchItem func(url string, filter []string) ([]Item, error)
 
 type SiteFeed struct {
@@ -65,14 +73,6 @@ func NewSiteFeed(data map[string]interface{}, fetch fetchItem) *SiteFeed {
 		baseURL: url,
 		filter:  filter,
 		fetch:   fetch,
-	}
-}
-
-func NewItem(title, link string, created time.Time) Item {
-	return Item{
-		title:   title,
-		link:    link,
-		created: created,
 	}
 }
 

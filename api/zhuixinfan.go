@@ -14,11 +14,13 @@ func ZhuixinfanHandler(w http.ResponseWriter, r *http.Request) {
 	data, err := firebase.GetData("feeds", "zhuixinfan")
 	if err != nil {
 		e.WriteError(w, err)
+		return
 	}
 	sf := feed.NewSiteFeed(data, fetchZhuixinfan)
 	rss, err := sf.Start()
 	if err != nil {
 		e.WriteError(w, err)
+		return
 	}
 	_, _ = w.Write([]byte(rss))
 
