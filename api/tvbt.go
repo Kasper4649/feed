@@ -39,7 +39,7 @@ func fetchTvbt(url string, filter []string) ([]feed.Item, error) {
 	for _, el := range elements {
 		link := htmlquery.SelectAttr(el, "href")
 		if strings.Contains(link, "pan.baidu.com") {
-			items = append(items, feed.NewItem("", link, t.StartOfDay(time.Now())))
+			items = append(items, feed.NewItem(url, link, t.StartOfDay(time.Now())))
 		}
 	}
 	return items, nil
